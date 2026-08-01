@@ -188,6 +188,8 @@ PATCH /api/users/:id/status
 
 ---
 
+Postman_Link:https://oraibahmed117-1737741.postman.co/workspace/oraib-Ahmed's-Workspace~b2a04d9e-0161-47b4-8dca-e043620af534/run/57057091-0c62364c-1157-44d5-9886-9d892014499f?action=share&creator=57057091&active-environment=57057091-2ffe80c5-7cd8-445c-8717-ed1de5d02f70
+
 # 🛡️ الأمان بالمشروع
 
 * حماية من **SQL Injection** باستخدام **Parameterized Queries** (`$1`, `$2` ...).
