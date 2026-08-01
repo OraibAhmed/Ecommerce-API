@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce API Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-base: #0a0a0a;
+            --bg-card: #141414;
+            --bg-input: #1e1e1e;
+
+            --border-color: #2a2a2a;
+            --border-focus: #d4af37;
+
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --text-code: #e5e7eb;
+
+            --primary: #d4af37;
+            --primary-hover: #b8972e;
+
+            --success: #10b981;
+            --danger: #ef4444;
+
+            --radius-lg: 12px;
+            --radius-md: 8px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 3rem 1rem;
+            line-height: 1.6;
+        }
+
+        .container { width: 100%; max-width: 960px; display: flex; flex-direction: column; gap: 2rem; }
+
+        .top-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; }
+        .top-bar h1 { font-size: 1.4rem; font-weight: 700; display: flex; align-items: center; gap: 0.6rem; }
+        .top-bar h1 i { color: var(--primary); }
+        .conn-status { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.5rem; }
+        .conn-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--text-muted); transition: background .2s ease; }
+        .conn-dot.up { background: var(--success); box-shadow: 0 0 0 3px rgba(16,185,129,0.15); }
+        .conn-dot.down { background: var(--danger); box-shadow: 0 0 0 3px rgba(239,68,68,0.15); }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-title { font-size: 1.2rem; font-weight: 700; display: flex; align-items: center; gap: 0.75rem; }
+        .card-title i { color: var(--primary); }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        label { font-size: 0.95rem; font-weight: 600; color: var(--text-muted); }
+
+        select, input, textarea {
+            width: 100%; background-color: var(--bg-input); border: 1px solid var(--border-color);
+            color: var(--text-main); padding: 0.8rem 1rem; border-radius: var(--radius-md);
+            font-family: inherit; font-size: 1rem; transition: border-color 0.2s ease;
+        }
+        select:focus, input:focus, textarea:focus { outline: none; border-color: var(--border-focus); }
+        textarea { font-family: 'Fira Code', monospace; min-height: 150px; resize: vertical; direction: ltr; }
+
+        .btn-group { display: flex; gap: 1rem; align-items: center; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 0.8rem 1.5rem; border-radius: var(--radius-md); font-weight: 700; font-size: 1rem;
+            cursor: pointer; transition: all 0.2s ease; border: none; font-family: inherit;
+        }
+        .btn-primary { background-color: var(--primary); color: #000; flex: 1; }
+        .btn-primary:hover { background-color: var(--primary-hover); }
+        .btn-secondary { background-color: var(--bg-input); color: var(--text-main); border: 1px solid var(--border-color); }
+        .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+
+        .response-container { background-color: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md); position: relative; overflow: hidden; }
+
+        .status-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 1rem; border-radius: 20px;
+            font-weight: 700; font-size: 0.9rem; font-family: 'Fira Code', monospace; opacity: 0; transition: opacity 0.3s ease;
+        }
+        .status-badge.show { opacity: 1; }
+        .status-success { background-color: rgba(16, 185, 129, 0.1); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.2); }
+        .status-error { background-color: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); }
+
+        pre {
+            padding: 1.5rem; font-family: 'Fira Code', monospace; font-size: 0.95rem; color: var(--text-code);
+            direction: ltr; text-align: left; margin: 0; white-space: pre-wrap; word-wrap: break-word;
+            min-height: 200px; overflow-x: auto;
+        }
+
+        .loading-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(20, 20, 20, 0.8);
+            backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center;
+            flex-direction: column; gap: 1rem; z-index: 10;
+        }
+        .spinner { width: 40px; height: 40px; border: 3px solid rgba(212, 175, 55, 0.2); border-radius: 50%; border-top-color: var(--primary); animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Test runner grid */
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; margin-top: 1.25rem; }
+        .test-item {
+            background: var(--bg-input); border: 1px solid var(--border-color); border-radius: var(--radius-md);
+            padding: 0.9rem 1rem; font-size: 0.85rem; display: flex; flex-direction: column; gap: 0.4rem;
+        }
+        .test-item .t-name { color: var(--text-main); font-weight: 600; }
+        .test-item .t-meta { font-family: 'Fira Code', monospace; color: var(--text-muted); font-size: 0.78rem; }
+        .test-item .t-result { font-family: 'Fira Code', monospace; font-size: 0.8rem; font-weight: 700; }
+        .t-result.pass { color: var(--success); }
+        .t-result.fail { color: var(--danger); }
+        .t-result.pending { color: var(--text-muted); }
+
+        .summary-bar { display: flex; align-items: center; gap: 1rem; margin-top: 1.25rem; font-family: 'Fira Code', monospace; font-size: 0.9rem; color: var(--text-muted); }
+        .summary-bar b { color: var(--text-main); }
+
+        @media (max-width: 768px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .btn-group { flex-direction: column; }
+            .btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <div class="top-bar">
+        <h1><i class="fa-solid fa-cart-shopping"></i> Ecommerce API — Test Dashboard</h1>
+        <div class="conn-status"><span class="conn-dot" id="connDot"></span><span id="connText">checking server...</span></div>
+    </div>
+
+    <!-- Manual Request Card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-sliders"></i> Request Configuration</div>
+            <button class="btn btn-secondary" onclick="loadExample()" style="padding: 0.4rem 1rem; font-size: 0.9rem;">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> Load Example
+            </button>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Method</label>
+                <select id="method" onchange="toggleBodyInput()">
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="PATCH">PATCH</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Endpoint</label>
+                <select id="endpoint" onchange="toggleBodyInput()">
+                    <option value="/api/products">/api/products</option>
+                    <option value="/api/categories">/api/categories</option>
+                    <option value="/api/users">/api/users</option>
+                </select>
+            </div>
+
+            <div class="form-group full-width">
+                <label>Resource ID <span style="font-weight: normal; font-size: 0.85rem;">— اختياري للـ GET/PUT/PATCH على سجل محدد</span></label>
+                <input type="number" id="resourceId" placeholder="e.g. 1" min="1">
+            </div>
+
+            <div class="form-group full-width" id="bodyGroup" style="display: none;">
+                <label>JSON Body</label>
+                <textarea id="reqBody" placeholder='{
+  "key": "value"
+}'></textarea>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="sendRequest()">
+                Send Request <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Response Card -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-terminal"></i> Response</div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span id="statusCode" class="status-badge"></span>
+                <button class="btn btn-secondary" id="copyBtn" onclick="copyResponse()" style="display: none; padding: 0.4rem 1rem; font-size: 0.9rem;">
+                    <i class="fa-regular fa-copy"></i> Copy
+                </button>
+            </div>
+        </div>
+
+        <div class="response-container">
+            <div id="loading" class="loading-overlay">
+                <div class="spinner"></div>
+                <span style="color: var(--primary); font-size: 1rem; font-weight: 600;">Processing...</span>
+            </div>
+            <pre id="resBody">// Response will appear here...</pre>
+        </div>
+    </div>
+
+    <!-- Automated 16-case test runner -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-list-check"></i> Run All 16 Tests</div>
+            <button class="btn btn-secondary" id="runAllBtn" onclick="runAllTests()" style="padding: 0.5rem 1.2rem; font-size: 0.9rem;">
+                <i class="fa-solid fa-play"></i> Run all
+            </button>
+        </div>
+        <div class="summary-bar" id="summaryBar">لم يتم التشغيل بعد.</div>
+        <div class="test-grid" id="testGrid"></div>
+    </div>
+
+</div>
+
+<script>
+    const API_BASE = window.location.origin.startsWith('http')
+        ? window.location.origin
+        : 'http://localhost:3000';
+
+    // ---------- Connection status check ----------
+    async function checkConnection() {
+        const dot = document.getElementById('connDot');
+        const text = document.getElementById('connText');
+        try {
+            const res = await fetch(API_BASE + '/api/products');
+            if (res.ok) {
+                dot.className = 'conn-dot up';
+                text.textContent = 'server connected — ' + API_BASE;
+            } else {
+                throw new Error('bad status');
+            }
+        } catch (e) {
+            dot.className = 'conn-dot down';
+            text.textContent = 'server unreachable — run "npm run dev"';
+        }
+    }
+    checkConnection();
+
+    // ---------- Manual request form ----------
+    function toggleBodyInput() {
+        const method = document.getElementById('method').value;
+        const bodyGroup = document.getElementById('bodyGroup');
+        bodyGroup.style.display = (method === 'GET') ? 'none' : 'block';
+    }
+
+    function loadExample() {
+        const endpoint = document.getElementById('endpoint').value;
+        const method = document.getElementById('method').value;
+        const reqBody = document.getElementById('reqBody');
+
+        if (method === 'GET') {
+            alert('GET requests do not need a JSON body.');
+            return;
+        }
+
+        if (endpoint === '/api/categories') {
+            reqBody.value = JSON.stringify({
+                name: "Accessories-" + Date.now(),
+                description: "General accessories category"
+            }, null, 4);
+        } else if (endpoint === '/api/products') {
+            reqBody.value = JSON.stringify({
+                category_id: 1,
+                name: "Gaming Laptop Pro",
+                description: "High performance gaming laptop",
+                price: 1299.99,
+                stock_quantity: 25,
+                sku: "LAP-GAM-" + Math.floor(Math.random() * 10000)
+            }, null, 4);
+        } else if (endpoint === '/api/users') {
+            if (method === 'PATCH') {
+                reqBody.value = JSON.stringify({ status: false }, null, 4);
+            } else {
+                reqBody.value = JSON.stringify({
+                    full_name: "Alia Mohammed",
+                    email: "user" + Date.now() + "@example.com",
+                    phone: "0790000000",
+                    role: "customer"
+                }, null, 4);
+            }
+        }
+
+        reqBody.style.borderColor = 'var(--success)';
+        setTimeout(() => { reqBody.style.borderColor = 'var(--border-color)'; }, 500);
+    }
+
+    function copyResponse() {
+        const resBody = document.getElementById('resBody');
+        const copyBtn = document.getElementById('copyBtn');
+        navigator.clipboard.writeText(resBody.textContent).then(() => {
+            const original = copyBtn.innerHTML;
+            copyBtn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+            copyBtn.style.color = 'var(--success)';
+            copyBtn.style.borderColor = 'var(--success)';
+            setTimeout(() => {
+                copyBtn.innerHTML = original;
+                copyBtn.style.color = '';
+                copyBtn.style.borderColor = '';
+            }, 2000);
+        });
+    }
+
+    function buildUrl(endpoint, method, resourceId) {
+        let url = API_BASE + endpoint;
+        if (resourceId) {
+            if (method === 'PATCH' && endpoint === '/api/products') url += `/${resourceId}/deactivate`;
+            else if (method === 'PATCH' && endpoint === '/api/users') url += `/${resourceId}/status`;
+            else url += `/${resourceId}`;
+        }
+        return url;
+    }
+
+    async function sendRequest() {
+        const endpoint = document.getElementById('endpoint').value;
+        const method = document.getElementById('method').value;
+        const resourceId = document.getElementById('resourceId').value.trim();
+        const reqBodyText = document.getElementById('reqBody').value;
+
+        const resBody = document.getElementById('resBody');
+        const statusCodeBadge = document.getElementById('statusCode');
+        const copyBtn = document.getElementById('copyBtn');
+        const loading = document.getElementById('loading');
+
+        statusCodeBadge.classList.remove('show');
+        copyBtn.style.display = 'none';
+        resBody.style.opacity = '0.5';
+        loading.style.display = 'flex';
+
+        const url = buildUrl(endpoint, method, resourceId);
+        const options = { method, headers: { 'Content-Type': 'application/json' } };
+
+        if (method !== 'GET' && reqBodyText.trim()) {
+            try {
+                options.body = JSON.stringify(JSON.parse(reqBodyText));
+            } catch (e) {
+                loading.style.display = 'none';
+                resBody.style.opacity = '1';
+                resBody.textContent = '❌ Error: Invalid JSON format.\n\n' + e.message;
+                resBody.style.color = 'var(--danger)';
+                return;
+            }
+        }
+
+        try {
+            const response = await fetch(url, options);
+            const textData = await response.text();
+            let data;
+            try { data = JSON.parse(textData); } catch (e) { data = textData; }
+
+            statusCodeBadge.innerHTML = response.ok
+                ? `<i class="fa-solid fa-check"></i> ${response.status} ${response.statusText}`
+                : `<i class="fa-solid fa-circle-exclamation"></i> ${response.status} ${response.statusText}`;
+            statusCodeBadge.className = response.ok ? 'status-badge status-success show' : 'status-badge status-error show';
+
+            resBody.style.color = response.ok ? 'var(--text-code)' : '#fca5a5';
+            resBody.textContent = typeof data === 'object' ? JSON.stringify(data, null, 4) : data;
+            copyBtn.style.display = 'inline-flex';
+        } catch (error) {
+            statusCodeBadge.innerHTML = `<i class="fa-solid fa-xmark"></i> Connection error`;
+            statusCodeBadge.className = 'status-badge status-error show';
+            resBody.textContent = '❌ Failed to connect to the server.\n\nDetails: ' + error.message;
+            resBody.style.color = 'var(--danger)';
+        } finally {
+            loading.style.display = 'none';
+            resBody.style.opacity = '1';
+        }
+    }
+
+    // ---------- Automated 16-case runner ----------
+    let sharedSku = 'SKU-TEST-' + Date.now();
+    let sharedEmail = 'testuser' + Date.now() + '@example.com';
+    let createdProductId = null;
+
+    const testCases = [
+        { name: '1. Get all products', expect: 200, run: () => fetch(`${API_BASE}/api/products`) },
+        { name: '2. Get an existing product', expect: 200, run: () => fetch(`${API_BASE}/api/products/1`) },
+        { name: '3. Get a non-existing product', expect: 404, run: () => fetch(`${API_BASE}/api/products/999999`) },
+        { name: '4. Create a valid product', expect: 201, run: async () => {
+            const res = await fetch(`${API_BASE}/api/products`, { method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ category_id: 1, name: 'Dashboard Test Product', price: 25, stock_quantity: 10, sku: sharedSku }) });
+            const json = await res.clone().json().catch(() => null);
+            if (json && json.data && json.data.id) createdProductId = json.data.id;
+            return res;
+        }},
+        { name: '5. Create without a name', expect: 400, run: () => fetch(`${API_BASE}/api/products`, { method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ category_id: 1, price: 10, stock_quantity: 5, sku: 'SKU-NO-NAME-' + Date.now() }) }) },
+        { name: '6. Negative price', expect: 400, run: () => fetch(`${API_BASE}/api/products`, { method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ category_id: 1, name: 'Bad price', price: -5, stock_quantity: 5, sku: 'SKU-NEG-PRICE-' + Date.now() }) }) },
+        { name: '7. Negative stock', expect: 400, run: () => fetch(`${API_BASE}/api/products`, { method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ category_id: 1, name: 'Bad stock', price: 10, stock_quantity: -5, sku: 'SKU-NEG-STOCK-' + Date.now() }) }) },
+        { name: '8. Duplicate SKU', expect: 409, run: () => fetch(`${API_BASE}/api/products`, { method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ category_id: 1, name: 'Duplicate SKU', price: 10, stock_quantity: 5, sku: sharedSku }) }) },
+        { name: '9. Update an existing product', expect: 200, run: () => fetch(`${API_BASE}/api/products/${createdProductId || 1}`, { method: 'PUT', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ category_id: 1, name: 'Updated name', price: 30, stock_quantity: 8, sku: sharedSku, is_active: true }) }) },
+        { name: '10. Update non-existing product', expect: 404, run: () => fetch(`${API_BASE}/api/products/999999`, { method: 'PUT', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ category_id: 1, name: 'Ghost', price: 10, stock_quantity: 1, sku: 'SKU-GHOST-' + Date.now() }) }) },
+        { name: '11. Deactivate a product', expect: 200, run: () => fetch(`${API_BASE}/api/products/${createdProductId || 1}/deactivate`, { method: 'PATCH' }) },
+        { name: '12. Create a valid category', expect: 201, run: () => fetch(`${API_BASE}/api/categories`, { method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ name: 'Category-' + Date.now(), description: 'Dashboard test category' }) }) },
+        { name: '13. Create a valid user', expect: 201, run: () => fetch(`${API_BASE}/api/users`, { method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ full_name: 'Dashboard Tester', email: sharedEmail, phone: '0790000000', role: 'customer' }) }) },
+        { name: '14. Duplicate email', expect: 409, run: () => fetch(`${API_BASE}/api/users`, { method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ full_name: 'Dup Tester', email: sharedEmail, phone: '0790000001', role: 'customer' }) }) },
+        { name: '15. Incomplete JSON', expect: 400, run: () => fetch(`${API_BASE}/api/products`, { method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ name: 'Incomplete product' }) }) },
+        { name: '16. Unknown API route', expect: 404, run: () => fetch(`${API_BASE}/api/unknown-route`) },
+    ];
+
+    function renderGrid() {
+        const grid = document.getElementById('testGrid');
+        grid.innerHTML = testCases.map((t, i) => `
+            <div class="test-item" id="test-${i}">
+                <div class="t-name">${t.name}</div>
+                <div class="t-meta">expected: ${t.expect}</div>
+                <div class="t-result pending" id="result-${i}">pending…</div>
+            </div>
+        `).join('');
+    }
+    renderGrid();
+
+    async function runAllTests() {
+        const btn = document.getElementById('runAllBtn');
+        const summary = document.getElementById('summaryBar');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Running…';
+
+        let passed = 0;
+        for (let i = 0; i < testCases.length; i++) {
+            const resultEl = document.getElementById(`result-${i}`);
+            resultEl.textContent = 'running…';
+            resultEl.className = 't-result pending';
+            try {
+                const res = await testCases[i].run();
+                const ok = res.status === testCases[i].expect;
+                if (ok) passed++;
+                resultEl.textContent = ok ? `✓ pass — ${res.status}` : `✗ fail — got ${res.status}`;
+                resultEl.className = ok ? 't-result pass' : 't-result fail';
+            } catch (e) {
+                resultEl.textContent = '✗ connection error';
+                resultEl.className = 't-result fail';
+            }
+        }
+
+        summary.innerHTML = `<b>${passed}/16</b> passed &nbsp;·&nbsp; ${16 - passed} failed`;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> Run all';
+    }
+</script>
+
+</body>
+</html>
