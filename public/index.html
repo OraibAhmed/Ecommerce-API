@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>E-Commerce Test Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.7);
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --success-hover: #059669;
+      --warning: #f59e0b;
+      --warning-hover: #d97706;
+      --danger: #ef4444;
+      --danger-hover: #dc2828;
+      --text-main: #f8fafc;
+      --text-muted: #cbd5e1;
+      --border-color: rgba(255, 255, 255, 0.1);
+      --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 30px;
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.15), transparent 25%),
+        radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.15), transparent 25%);
+      background-attachment: fixed;
+    }
+
+    h1, h2, h3 { font-weight: 600; margin-top: 0; }
+    h1 { font-size: 2.5rem; text-align: center; margin-bottom: 40px; background: -webkit-linear-gradient(#60a5fa, #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+      box-shadow: var(--glass-shadow);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      transition: all 0.2s ease;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .btn:active { transform: translateY(0); }
+    
+    .btn-primary { background: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-success { background: var(--success); }
+    .btn-success:hover { background: var(--success-hover); }
+    .btn-warning { background: var(--warning); color: #000; text-shadow: none; }
+    .btn-warning:hover { background: var(--warning-hover); color: white; }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: var(--danger-hover); }
+    .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--text-main); }
+    .btn-outline:hover { background: var(--primary); color: white; }
+
+    /* Layout & Forms */
+    .grid-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-container { grid-template-columns: 1fr; }
+    }
+
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 25px;
+      background: rgba(0,0,0,0.2);
+      padding: 20px;
+      border-radius: 12px;
+    }
+
+    input, select {
+      padding: 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: rgba(255,255,255,0.05);
+      color: var(--text-main);
+      font-family: 'Inter', sans-serif;
+      flex: 1;
+      min-width: 160px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--primary); background: rgba(255,255,255,0.1); }
+    ::placeholder { color: #64748b; }
+
+    /* Tables */
+    .table-responsive { overflow-x: auto; }
+    table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 10px; }
+    th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border-color); }
+    th { background: rgba(255,255,255,0.03); font-weight: 600; color: var(--text-muted); text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px; }
+    th:first-child { border-top-left-radius: 8px; }
+    th:last-child { border-top-right-radius: 8px; }
+    tbody tr { transition: background 0.2s; }
+    tbody tr:hover { background: rgba(255,255,255,0.04); }
+    td { font-size: 14px; }
+
+    /* Status Badges */
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-active { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-inactive { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    /* Test Area */
+    .test-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .test-btn {
+      flex: 1 0 calc(25% - 10px);
+      min-width: 180px;
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: var(--text-muted);
+    }
+    .test-btn:hover { background: rgba(59, 130, 246, 0.3); color: white; }
+
+    #test-results-box {
+      background: #020617;
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      border-radius: 12px;
+      height: 500px;
+      overflow-y: auto;
+      font-family: 'Menlo', 'Consolas', monospace;
+      font-size: 13px;
+    }
+    
+    #test-results-box::-webkit-scrollbar { width: 8px; }
+    #test-results-box::-webkit-scrollbar-track { background: transparent; }
+    #test-results-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+    .test-case {
+      margin-bottom: 20px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      border-left: 4px solid var(--text-muted);
+      overflow: hidden;
+      animation: fadeIn 0.3s ease-out;
+    }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .test-case.pass { border-left-color: var(--success); }
+    .test-case.fail { border-left-color: var(--danger); }
+    
+    .test-header {
+      padding: 12px 15px;
+      background: rgba(0,0,0,0.2);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .test-title { font-weight: 600; font-family: 'Inter', sans-serif; font-size: 15px; }
+    .test-status { font-weight: bold; }
+    .pass .test-status { color: var(--success); }
+    .fail .test-status { color: var(--danger); }
+    
+    .test-body { padding: 15px; }
+    .test-meta { color: #94a3b8; margin-bottom: 10px; display: flex; gap: 15px; }
+    .method { color: #fbbf24; font-weight: 600; }
+    
+    pre {
+      margin: 0;
+      background: rgba(0,0,0,0.3);
+      padding: 12px;
+      border-radius: 6px;
+      color: #a78bfa;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    .tabs { margin-bottom: 20px; display: flex; gap: 10px; }
+    
+  </style>
+</head>
+<body>
+
+  <h1>E-Commerce API Dashboard 🚀</h1>
+
+  <div class="grid-container">
+    
+    <!-- Left Column: Data Explorer -->
+    <div class="glass-card">
+      <h2>Data Explorer</h2>
+      <div class="tabs">
+        <button class="btn btn-primary" onclick="loadProducts()">Products</button>
+        <button class="btn btn-primary" onclick="loadCategories()">Categories</button>
+        <button class="btn btn-primary" onclick="loadUsers()">Users</button>
+      </div>
+      
+      <!-- Products -->
+      <div id="products-section" style="display:none;">
+        <form onsubmit="event.preventDefault(); createProduct();">
+          <input type="number" id="p-category" placeholder="Cat ID" required style="flex:0.5;">
+          <input type="text" id="p-name" placeholder="Product Name" required>
+          <input type="number" step="0.01" id="p-price" placeholder="Price" required style="flex:0.5;">
+          <input type="number" id="p-stock" placeholder="Stock" required style="flex:0.5;">
+          <input type="text" id="p-sku" placeholder="SKU" required>
+          <button class="btn btn-success" type="submit" style="width:100%;">Create Product</button>
+        </form>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Price</th><th>Stock</th><th>SKU</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Categories -->
+      <div id="categories-section" style="display:none;">
+        <form onsubmit="event.preventDefault(); createCategory();">
+          <input type="text" id="c-name" placeholder="Category Name" required>
+          <input type="text" id="c-desc" placeholder="Description (Optional)">
+          <button class="btn btn-success" type="submit" style="width:100%;">Create Category</button>
+        </form>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Description</th><th>Status</th></tr></thead>
+            <tbody id="categories-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Users -->
+      <div id="users-section" style="display:none;">
+        <form onsubmit="event.preventDefault(); createUser();">
+          <input type="text" id="u-name" placeholder="Full Name" required>
+          <input type="email" id="u-email" placeholder="Email" required>
+          <select id="u-role"><option value="customer">Customer</option><option value="admin">Admin</option></select>
+          <button class="btn btn-success" type="submit" style="width:100%;">Create User</button>
+        </form>
+        <div class="table-responsive">
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Automated Tests -->
+    <div class="glass-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin:0;">Test Runner</h2>
+        <button class="btn btn-warning" onclick="runAllTests()">⚡ Run All 16 Tests</button>
+      </div>
+      
+      <div class="test-actions">
+        <button class="btn test-btn" onclick="runTest(0)">1. Get products</button>
+        <button class="btn test-btn" onclick="runTest(1)">2. Get 1 product</button>
+        <button class="btn test-btn" onclick="runTest(2)">3. Get non-existing</button>
+        <button class="btn test-btn" onclick="runTest(3)">4. Create valid</button>
+        <button class="btn test-btn" onclick="runTest(4)">5. Create (no name)</button>
+        <button class="btn test-btn" onclick="runTest(5)">6. Create (-price)</button>
+        <button class="btn test-btn" onclick="runTest(6)">7. Create (-stock)</button>
+        <button class="btn test-btn" onclick="runTest(7)">8. Duplicate SKU</button>
+        <button class="btn test-btn" onclick="runTest(8)">9. Update product</button>
+        <button class="btn test-btn" onclick="runTest(9)">10. Update non-existing</button>
+        <button class="btn test-btn" onclick="runTest(10)">11. Deactivate</button>
+        <button class="btn test-btn" onclick="runTest(11)">12. Create Category</button>
+        <button class="btn test-btn" onclick="runTest(12)">13. Create User</button>
+        <button class="btn test-btn" onclick="runTest(13)">14. Duplicate Email</button>
+        <button class="btn test-btn" onclick="runTest(14)">15. Bad JSON</button>
+        <button class="btn test-btn" onclick="runTest(15)">16. 404 Route</button>
+      </div>
+
+      <div id="test-results-box">
+        <div style="color: #64748b; text-align: center; margin-top: 200px; font-family: 'Inter', sans-serif;">
+          Click a test above or run all to see results here.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const baseUrl = 'http://localhost:3000/api';
+    
+    // UI Logic
+    function hideAllSections() {
+      document.getElementById('products-section').style.display = 'none';
+      document.getElementById('categories-section').style.display = 'none';
+      document.getElementById('users-section').style.display = 'none';
+    }
+
+    function renderBadge(isActive) {
+      return isActive 
+        ? `<span class="badge badge-active">Active</span>` 
+        : `<span class="badge badge-inactive">Inactive</span>`;
+    }
+
+    async function loadProducts() {
+      hideAllSections();
+      document.getElementById('products-section').style.display = 'block';
+      const res = await fetch(`${baseUrl}/products`);
+      const json = await res.json();
+      const tbody = document.getElementById('products-tbody');
+      tbody.innerHTML = '';
+      if(json.data) {
+        json.data.forEach(p => {
+          tbody.innerHTML += `<tr>
+            <td>${p.id}</td>
+            <td><strong>${p.name}</strong></td>
+            <td>$${p.price}</td>
+            <td>${p.stock}</td>
+            <td><small style="color:#94a3b8">${p.sku}</small></td>
+            <td>${renderBadge(p.is_active)}</td>
+            <td>
+              ${p.is_active ? `<button class="btn btn-outline" style="padding:4px 8px; font-size:12px;" onclick="deactivateProduct(${p.id})">Deactivate</button>` : ''}
+            </td>
+          </tr>`;
+        });
+      }
+    }
+
+    async function createProduct() {
+      const data = {
+        category_id: parseInt(document.getElementById('p-category').value),
+        name: document.getElementById('p-name').value,
+        price: parseFloat(document.getElementById('p-price').value),
+        stock_quantity: parseInt(document.getElementById('p-stock').value),
+        sku: document.getElementById('p-sku').value
+      };
+      await fetch(`${baseUrl}/products`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      loadProducts();
+    }
+
+    async function deactivateProduct(id) {
+      await fetch(`${baseUrl}/products/${id}/deactivate`, { method: 'PATCH' });
+      loadProducts();
+    }
+
+    async function loadCategories() {
+      hideAllSections();
+      document.getElementById('categories-section').style.display = 'block';
+      const res = await fetch(`${baseUrl}/categories`);
+      const json = await res.json();
+      const tbody = document.getElementById('categories-tbody');
+      tbody.innerHTML = '';
+      if(json.data) {
+        json.data.forEach(c => {
+          tbody.innerHTML += `<tr>
+            <td>${c.id}</td>
+            <td><strong>${c.name}</strong></td>
+            <td><small style="color:#94a3b8">${c.description || '--'}</small></td>
+            <td>${renderBadge(c.is_active)}</td>
+          </tr>`;
+        });
+      }
+    }
+
+    async function createCategory() {
+      const data = {
+        name: document.getElementById('c-name').value,
+        description: document.getElementById('c-desc').value
+      };
+      await fetch(`${baseUrl}/categories`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      loadCategories();
+    }
+
+    async function loadUsers() {
+      hideAllSections();
+      document.getElementById('users-section').style.display = 'block';
+      const res = await fetch(`${baseUrl}/users`);
+      const json = await res.json();
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = '';
+      if(json.data) {
+        json.data.forEach(u => {
+          tbody.innerHTML += `<tr>
+            <td>${u.id}</td>
+            <td><strong>${u.full_name}</strong></td>
+            <td><small style="color:#94a3b8">${u.email}</small></td>
+            <td><span style="text-transform:capitalize;">${u.role}</span></td>
+            <td>${renderBadge(u.is_active)}</td>
+            <td>
+              <button class="btn btn-outline" style="padding:4px 8px; font-size:12px;" onclick="toggleUserStatus(${u.id}, ${!u.is_active})">Toggle</button>
+            </td>
+          </tr>`;
+        });
+      }
+    }
+
+    async function createUser() {
+      const data = {
+        full_name: document.getElementById('u-name').value,
+        email: document.getElementById('u-email').value,
+        role: document.getElementById('u-role').value
+      };
+      await fetch(`${baseUrl}/users`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      loadUsers();
+    }
+
+    async function toggleUserStatus(id, newStatus) {
+      await fetch(`${baseUrl}/users/${id}/status`, {
+        method: 'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ status: newStatus })
+      });
+      loadUsers();
+    }
+
+    // Default Load
+    loadProducts();
+
+    // Testing Logic
+    let existingProductId = null;
+    let existingCategoryId = null;
+
+    const tests = [
+      { name: "1. Get all products", method: "GET", path: "/products", expected: 200 },
+      { name: "2. Get an existing product", method: "GET", path: "/products/99999", expected: 200, dynamicPath: () => \`/products/\${existingProductId || 1}\` },
+      { name: "3. Get a non-existing product", method: "GET", path: "/products/999999", expected: 404 },
+      { name: "4. Create a valid product", method: "POST", path: "/products", expected: 201, 
+        body: () => ({ category_id: existingCategoryId || 1, name: "Test Prod", price: 100, stock_quantity: 10, sku: "TEST-SKU-" + Date.now() }) },
+      { name: "5. Create a product without a name", method: "POST", path: "/products", expected: 400, 
+        body: () => ({ category_id: 1, price: 100, stock_quantity: 10, sku: "SKU-NONAME" }) },
+      { name: "6. Create a product with a negative price", method: "POST", path: "/products", expected: 400, 
+        body: () => ({ category_id: 1, name: "Test", price: -10, stock_quantity: 10, sku: "SKU-NEGPRICE" }) },
+      { name: "7. Create a product with negative stock", method: "POST", path: "/products", expected: 400, 
+        body: () => ({ category_id: 1, name: "Test", price: 10, stock_quantity: -5, sku: "SKU-NEGSTOCK" }) },
+      { name: "8. Create a product with a duplicate SKU", method: "POST", path: "/products", expected: 409, 
+        body: () => ({ category_id: 1, name: "Test", price: 10, stock_quantity: 5, sku: "DUP-SKU" }), pre: async () => {
+          await fetch(`${baseUrl}/products`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ category_id: 1, name: "Test", price: 10, stock_quantity: 5, sku: "DUP-SKU" }) });
+        } },
+      { name: "9. Update an existing product", method: "PUT", path: "/products/99999", expected: 200, dynamicPath: () => \`/products/\${existingProductId || 1}\`,
+        body: () => ({ category_id: 1, name: "Updated Test Prod", price: 150, stock_quantity: 20, sku: "TEST-SKU-UPDATED-" + Date.now() }) },
+      { name: "10. Update a non-existing product", method: "PUT", path: "/products/999999", expected: 404, 
+        body: () => ({ category_id: 1, name: "Update", price: 150, stock_quantity: 20, sku: "SKU-XXX" }) },
+      { name: "11. Deactivate a product", method: "PATCH", path: "/products/99999/deactivate", expected: 200, dynamicPath: () => \`/products/\${existingProductId || 1}/deactivate\` },
+      { name: "12. Create a valid category", method: "POST", path: "/categories", expected: 201, 
+        body: () => ({ name: "Test Category " + Date.now() }) },
+      { name: "13. Create a valid user", method: "POST", path: "/users", expected: 201, 
+        body: () => ({ full_name: "Test User", email: \`test\${Date.now()}@example.com\` }) },
+      { name: "14. Create a user with a duplicate email", method: "POST", path: "/users", expected: 409, 
+        body: () => ({ full_name: "Test", email: "dup@example.com" }), pre: async () => {
+          await fetch(`${baseUrl}/users`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ full_name: "Test", email: "dup@example.com" }) });
+        } },
+      { name: "15. Send incomplete JSON", method: "POST", path: "/users", expected: 400, body: () => ({ full_name: "Test Only" }) },
+      { name: "16. Request an unknown API route", method: "GET", path: "/unknown-route", expected: 404 }
+    ];
+
+    async function runTest(index, isBulk = false) {
+      const t = tests[index];
+      const box = document.getElementById('test-results-box');
+      if(!isBulk) box.innerHTML = ''; // clear on individual run
+
+      // Setup pre-requisites silently
+      if(t.pre) await t.pre();
+      if(!existingCategoryId) {
+        const cRes = await (await fetch(`${baseUrl}/categories`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name: 'Default Cat'}) })).json();
+        if(cRes.data) existingCategoryId = cRes.data.id;
+      }
+      if(!existingProductId) {
+        const pRes = await (await fetch(`${baseUrl}/products`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({category_id: existingCategoryId || 1, name: "Pre Prod", price: 10, stock_quantity: 1, sku: "PRE-" + Date.now()}) })).json();
+        if(pRes.data) existingProductId = pRes.data.id;
+      }
+
+      const path = t.dynamicPath ? t.dynamicPath() : t.path;
+      let options = { method: t.method, headers: {'Content-Type': 'application/json'} };
+      let bodyData = null;
+      if (t.body) {
+        bodyData = t.body();
+        options.body = JSON.stringify(bodyData);
+      }
+
+      try {
+        const res = await fetch(baseUrl + path, options);
+        const json = await res.json();
+        const passed = res.status === t.expected;
+        
+        const statusClass = passed ? 'pass' : 'fail';
+        const icon = passed ? '✅ PASS' : '❌ FAIL';
+
+        const html = \`
+          <div class="test-case \${statusClass}">
+            <div class="test-header">
+              <span class="test-title">\${t.name}</span>
+              <span class="test-status">\${icon}</span>
+            </div>
+            <div class="test-body">
+              <div class="test-meta">
+                <span><span class="method">\${t.method}</span> \${path}</span>
+                <span>Expected: \${t.expected} | Actual: \${res.status}</span>
+              </div>
+              \${bodyData ? \`<div style="margin-bottom:10px;"><small style="color:#94a3b8">Payload:</small><br><pre style="color:#60a5fa">\${JSON.stringify(bodyData)}</pre></div>\` : ''}
+              <div><small style="color:#94a3b8">Response:</small><br><pre>\${JSON.stringify(json, null, 2)}</pre></div>
+            </div>
+          </div>
+        \`;
+        
+        if(!isBulk) {
+            box.innerHTML = html;
+        } else {
+            box.innerHTML += html;
+        }
+        
+        box.scrollTop = box.scrollHeight;
+        return passed;
+      } catch (e) {
+        box.innerHTML += \`<div class="test-case fail"><div class="test-header"><span class="test-title">\${t.name}</span><span class="test-status">❌ Error</span></div><div class="test-body">\${e.message}</div></div>\`;
+        return false;
+      }
+    }
+
+    async function runAllTests() {
+      const box = document.getElementById('test-results-box');
+      box.innerHTML = '<div style="text-align:center; padding:20px; color:#3b82f6;">⏳ Running automated test suite...</div>';
+      
+      let passedCount = 0;
+      box.innerHTML = ''; // clear loading
+      
+      for (let i = 0; i < tests.length; i++) {
+        const isPassed = await runTest(i, true);
+        if (isPassed) passedCount++;
+      }
+      
+      const allPassed = passedCount === tests.length;
+      box.innerHTML += \`
+        <div style="background: \${allPassed ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}; 
+                    border: 1px solid \${allPassed ? '#10b981' : '#ef4444'}; 
+                    padding: 20px; border-radius: 12px; margin-top: 20px; text-align: center;">
+          <h3 style="margin:0; color: \${allPassed ? '#34d399' : '#f87171'}">
+            \${allPassed ? '🎉 All Tests Passed!' : '⚠️ Some Tests Failed'}
+          </h3>
+          <p style="margin: 10px 0 0 0;">Score: \${passedCount} / \${tests.length}</p>
+        </div>
+      \`;
+      box.scrollTop = box.scrollHeight;
+    }
+  </script>
+</body>
+</html>
